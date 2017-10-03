@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.UI.WebControls;
 using AspNetIdentity.WebApi.Infrastructure;
 using AspNetIdentity.WebApi.Models;
 using Microsoft.AspNet.Identity;
@@ -12,6 +11,7 @@ namespace AspNetIdentity.WebApi.Controllers
     [RoutePrefix("api/accounts")]
     public class AccountsController : BaseApiController
     {
+        [Authorize]
         [Route("users")]
         public IHttpActionResult GetUsers()
         {
@@ -75,11 +75,11 @@ namespace AspNetIdentity.WebApi.Controllers
                 // Set the confirmation email settings
                 //
                 var code = await ApplicationUserManager.GenerateEmailConfirmationTokenAsync(applicationUser.Id);
-                var callbackUrl = new Uri(Url.Link("ConfirmEmailRoute", new {userId = applicationUser.Id, code=code}));
+                var callbackUrl = new Uri(Url.Link("ConfirmEmailRoute", new { userId = applicationUser.Id, code }));
                 await ApplicationUserManager.SendEmailAsync(applicationUser.Id, "Confirm Your Account", $"Click this {callbackUrl} to confirm");
 
 
-                var locationHeader = new Uri(Url.Link("GetUserById", new {id = applicationUser.Id}));
+                var locationHeader = new Uri(Url.Link("GetUserById", new { id = applicationUser.Id }));
                 var userDto = ModelFactory.Create(applicationUser);
 
                 return Created(locationHeader, userDto);
@@ -88,6 +88,7 @@ namespace AspNetIdentity.WebApi.Controllers
             return GetErrorResult(result);
         }
 
+        [Authorize]
         [Route("ChangePassword")]
         public async Task<IHttpActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {
@@ -133,6 +134,48 @@ namespace AspNetIdentity.WebApi.Controllers
 
 
             return GetErrorResult(result);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [Route("user/{id:guid}/roles")]
+        [HttpPut]
+        public async Task<IHttpActionResult> AssignRolesToUser([FromUri] string id, [FromBody] string[] rolesToAssign)
+        {
+            var appUser = await ApplicationUserManager.FindByIdAsync(id);
+
+            if (appUser == null)
+            {
+                return NotFound();
+            }
+
+            var currentRoles = await ApplicationUserManager.GetRolesAsync(appUser.Id);
+
+            var rolesNotExists = rolesToAssign.Except(ApplicationRoleManager.Roles.Select(x => x.Name)).ToArray();
+
+            if (rolesNotExists.Any())
+            {
+                ModelState.AddModelError("", $"Roles '{string.Join(",", rolesNotExists)}' does not exixts in the system");
+                return BadRequest(ModelState);
+            }
+
+            var removeResult = await ApplicationUserManager.RemoveFromRolesAsync(appUser.Id, currentRoles.ToArray());
+
+            if (!removeResult.Succeeded)
+            {
+                ModelState.AddModelError("", "Failed to remove user roles");
+                return BadRequest(ModelState);
+            }
+
+            var addResult = await ApplicationUserManager.AddToRolesAsync(appUser.Id, rolesToAssign);
+
+            if (addResult.Succeeded)
+            {
+                return Ok();
+            }
+
+            ModelState.AddModelError("", "Failed to add user roles");
+
+            return BadRequest(ModelState);
         }
     }
 }

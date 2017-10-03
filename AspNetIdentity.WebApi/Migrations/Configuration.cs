@@ -37,8 +37,20 @@ namespace AspNetIdentity.WebApi.Migrations
             // Create the user manager instance, and use it to save the administrator
             //
             var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            userManager.Create(administrator,"cheranga");
+            //
+            // Create the role manager, add roles, and the above user to the administrator role
+            //
+            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
+            if (roleManager.Roles.Any() == false)
+            {
+                roleManager.Create(new IdentityRole("SuperAdmin"));
+                roleManager.Create(new IdentityRole("Admin"));
+                roleManager.Create(new IdentityRole("User"));
+            }
 
-            userManager.Create(administrator);
+            var adminUser = userManager.FindByName("cheranga");
+            userManager.AddToRoles(adminUser.Id, "SuperAdmin", "Admin");
         }
     }
 }

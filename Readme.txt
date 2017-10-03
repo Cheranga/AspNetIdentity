@@ -148,10 +148,109 @@ Create an end point in "AccountsController"
 -----------------------------------------------
 This application will act as both the "authorization server" and the "resource server".
 
+- Create OAuthProvider class
+
+ public class CustomOAuthProvider : OAuthAuthorizationServerProvider
+ {
+	public override Task ValidateClientAuthentication(OAuthValidateClientAuthenticationContext context)
+    {
+		// CONSIDERING THE REQUESTS ARE ALWAYS COMING FROM A TRUSTED SOURCE
+        context.Validated();
+        return Task.FromResult<object>(null);
+    }
+ 
+    public override async Task GrantResourceOwnerCredentials(OAuthGrantResourceOwnerCredentialsContext context)
+    {
+		// grant JWT token
+	}
+ 
+ }
+
+- Create "GenerateUserIdentityAsync" method in the "ApplicationUser"
+This will create a "ClaimsIdentity" instance
+
+public async Task<ClaimsIdentity> GenerateUserIdentityAsync(ApplicationUserManager userManager, string authenticationType)
+{
+    return await userManager.CreateIdentityAsync(this, authenticationType);
+}
+
+- Issue JSON Web Tokens instead of Default Access Tokens
+
+IMPORTANT - INSTALL OLD PACKAGE '4.0.2' FOR 'System.IdentityModel.Tokens.Jwt'
+
+System.IdentityModel.Tokens.Jwt
+Thinktecture.IdentityModel.Core
+
+- Since ASP.NET has no direct support to issue JWT need to implement it
+
+public class CustomJwtFormat : ISecureDataFormat<AuthenticationTicket>
+{
+	public string Protect(AuthenticationTicket data)
+    {
+		// This creates a custom JWT.
+	}
+}
+
+- Add support for OAuth 2.0 JWT Generation
+In "Startup" class
+
+ var serverOptions = new OAuthAuthorizationServerOptions
+            {
+                AllowInsecureHttp = true,
+                TokenEndpointPath = new PathString("/oauth/token"),
+                AccessTokenExpireTimeSpan = TimeSpan.FromDays(1),
+                Provider = new CustomOAuthProvider(),
+                AccessTokenFormat = new CustomJwtFormat("http://localhost:51678")
+            };
+            builder.UseOAuthAuthorizationServer(serverOptions);
 
 
+- Decorate the controller / action methods which needs authorization
+
+- Configure JWT token consumption
+Since we change the way the JWT creation, we need to configure our API to trust tokens issued by our authorization server only.
+So install the following nuget package and in the startup class configure JWT consumption
+
+Install-Package Microsoft.Owin.Security.Jwt
+
+- Startup.cs
+
+private void ConfigureOAuthTokenConsumption(IAppBuilder builder)
+        {
+            var issuer = "http://localhost:51678";
+            var audienceId = ConfigurationManager.AppSettings.Get("as:AudienceId");
+            var audienceSecret = TextEncodings.Base64Url.Decode(ConfigurationManager.AppSettings.Get("as:AudienceSecret"));
 
 
+            builder.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
+            {
+                AuthenticationMode = AuthenticationMode.Active,
+                AllowedAudiences = new[] {audienceId},
+                IssuerSecurityTokenProviders = new IIssuerSecurityTokenProvider[]
+                {
+                    new SymmetricKeyIssuerSecurityTokenProvider(issuer, audienceSecret)
+                }
+            });
+
+        }
 
 
+* Roles based authorization
+---------------------------
+- Create a custom role manager class
+public class ApplicationRoleManager : RoleManager<IdentityRole>
+{
+}
 
+- Assign the role manager class to the OWIN context
+private void ConfigureOAuthTokenGeneration(IAppBuilder app)
+{	
+	app.CreatePerOwinContext<ApplicationRoleManager>(ApplicationRoleManager.Create);
+ 
+}
+
+- Add a "RolesController", and add corresponding action methods
+
+- Decorate action methods with roles if necessary
+
+- Drop the database and modify the migration file to add a default user with "admin" priviledges

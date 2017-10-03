@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace AspNetIdentity.WebApi.Infrastructure
@@ -19,5 +21,10 @@ namespace AspNetIdentity.WebApi.Infrastructure
 
         [Required]
         public DateTime JoinDate { get; set; }
+
+        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(ApplicationUserManager userManager, string authenticationType)
+        {
+            return await userManager.CreateIdentityAsync(this, authenticationType);
+        }
     }
 }

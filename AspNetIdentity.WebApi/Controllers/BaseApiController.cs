@@ -11,10 +11,16 @@ namespace AspNetIdentity.WebApi.Controllers
     {
         private ApplicationUserManager _applicationUserManager;
         private ModelFactory _modelFactory;
+        private ApplicationRoleManager _applicationRoleManager;
 
         protected ApplicationUserManager ApplicationUserManager
         {
             get { return _applicationUserManager ?? (_applicationUserManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>()); }
+        }
+
+        protected ApplicationRoleManager ApplicationRoleManager
+        {
+            get { return _applicationRoleManager ?? (_applicationRoleManager = Request.GetOwinContext().GetUserManager<ApplicationRoleManager>()); }
         }
 
         protected ModelFactory ModelFactory

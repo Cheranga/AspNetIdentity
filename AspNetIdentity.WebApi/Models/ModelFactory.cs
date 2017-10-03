@@ -2,6 +2,7 @@
 using System.Web.Http.Routing;
 using AspNetIdentity.WebApi.Infrastructure;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace AspNetIdentity.WebApi.Models
 {
@@ -30,6 +31,16 @@ namespace AspNetIdentity.WebApi.Models
                 JoinDate = user.JoinDate,
                 Roles = _manager.GetRoles(user.Id),
                 Claims = _manager.GetClaims(user.Id)
+            };
+        }
+
+        public RoleReturnDto Create(IdentityRole appRole)
+        {
+            return new RoleReturnDto
+            {
+                Id = appRole.Id,
+                Name = appRole.Name,
+                Url = _urlHelper.Link("GetRoleById", new {id = appRole.Id})
             };
         }
     }
