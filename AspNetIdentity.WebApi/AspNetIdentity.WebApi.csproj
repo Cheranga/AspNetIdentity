@@ -178,17 +178,23 @@
   <ItemGroup>
     <Compile Include="Controllers\AccountsController.cs" />
     <Compile Include="Controllers\BaseApiController.cs" />
+    <Compile Include="Controllers\ClaimsController.cs" />
+    <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\RolesController.cs" />
     <Compile Include="Infrastructure\ApplicationDbContext.cs" />
     <Compile Include="Infrastructure\ApplicationUser.cs" />
     <Compile Include="Infrastructure\ApplicationUserManager.cs" />
     <Compile Include="Infrastructure\ApplicationRoleManager.cs" />
+    <Compile Include="Infrastructure\ClaimsAuthorizationAttribute.cs" />
+    <Compile Include="Infrastructure\ExtendedClaimsProvider.cs" />
+    <Compile Include="Infrastructure\RolesFromClaims.cs" />
     <Compile Include="Migrations\201709301706252_InitialCreate.cs" />
     <Compile Include="Migrations\201709301706252_InitialCreate.Designer.cs">
       <DependentUpon>201709301706252_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ChangePasswordDto.cs" />
+    <Compile Include="Models\ClaimBindingModel.cs" />
     <Compile Include="Models\CreateRoleBindingDto.cs" />
     <Compile Include="Models\CreateUserDto.cs" />
     <Compile Include="Models\ModelFactory.cs" />

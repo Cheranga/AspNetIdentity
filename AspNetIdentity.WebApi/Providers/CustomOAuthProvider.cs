@@ -44,6 +44,15 @@ namespace AspNetIdentity.WebApi.Providers
             }
 
             var oAuthIdentity = await user.GenerateUserIdentityAsync(userManager, "JWT");
+            //
+            // Get claims for the user
+            //
+            oAuthIdentity.AddClaims(ExtendedClaimsProvider.GetClaims(user));
+            //
+            // Get role based claims
+            //
+            oAuthIdentity.AddClaims(RolesFromClaims.CreateRolesBasedOnClaims(oAuthIdentity));
+
             var ticket = new AuthenticationTicket(oAuthIdentity,null);
 
             context.Validated(ticket);

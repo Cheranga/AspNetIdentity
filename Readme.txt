@@ -254,3 +254,14 @@ private void ConfigureOAuthTokenGeneration(IAppBuilder app)
 - Decorate action methods with roles if necessary
 
 - Drop the database and modify the migration file to add a default user with "admin" priviledges
+
+
+* Claims based authorization
+----------------------------
+This implementation depends on the system. If we have a solid set of roles which barely changes, we might not need to have claims
+(After all roles are also a claim)
+
+- Adding / removing claims on the fly
+- Creating a custom authorization filter which handles the claims
+- Handing claims through the user manager class. In this method the claims will be actually preserved in the tables, and there will be
+  no extra steps to get the claims because all the claims will be retrieved when we call "GenerateUserIdentityAsync" method in the application user instance.
