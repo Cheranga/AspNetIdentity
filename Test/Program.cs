@@ -14,16 +14,16 @@ namespace Test
         {
             //var emailMessage = new SendGridMessage();
 
-            //emailMessage.AddTo("cheranga@gmail.com");
-            //emailMessage.From = new EmailAddress("cheranga@gmail.com", "Cheranga Hatangala");
+            //emailMessage.AddTo("[EMAIL ADDRESS]");
+            //emailMessage.From = new EmailAddress("[EMAIL ADDRESS]", "[NAME]");
             //emailMessage.Subject = "Hi!";
             //emailMessage.PlainTextContent = "Hello World from SendGrid!";
             //emailMessage.HtmlContent = "Hello World from SendGrid!";
 
             //var emailClient = new SendGridClient("sendemail", requestHeaders:new Dictionary<string, string>
             //{
-            //    {"api_key", "ch3rasendgrid" },
-            //    {"api_user", "cheranga" }
+            //    {"api_key", "[YOUR API KEY FROM SEND GRID]" },
+            //    {"api_user", "[USER NAME]" }
             //});
             //var result = emailClient.SendEmailAsync(emailMessage).Result;
 
@@ -43,12 +43,12 @@ namespace Test
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("cheranga@gmail.com", "Cheranga Hatangala"),
+                From = new EmailAddress("[EMAIL ADDRESS]", "Cheranga Hatangala"),
                 Subject = "Hi",
                 PlainTextContent = "Hello Email!",
                 HtmlContent = "Hello Email!"
             };
-            msg.AddTo(new EmailAddress("cheranga@gmail.com", "Cheranga"));
+            msg.AddTo(new EmailAddress("[EMAIL ADDRESS]", "Cheranga"));
             var response = client.SendEmailAsync(msg).Result;
         }
     }
